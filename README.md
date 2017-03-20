@@ -2,37 +2,40 @@
 
 ### pg_dump module params
 
-| parameter       | required | default  | choices   | comment                                      |
-|-----------------|----------|----------|-----------|----------------------------------------------|
-| **dbname**      | yes      |          |           | --dbname=**dbane**                           |
-|-----------------|----------|----------|-----------|----------------------------------------------|
-| **username**    | no       | postgres |           | --username=**username**                      |
-|-----------------|----------|----------|-----------|----------------------------------------------|
-| **password**    | no       |          |           | PGPASSWORD=**password**                      |
-|-----------------|----------|----------|-----------|----------------------------------------------|
-| **host**        | no       |          |           | --host=**host**                              |
-|-----------------|----------|----------|-----------|----------------------------------------------|
-| **port**        | no       | 5432     |           |                                              |
-|-----------------|----------|----------|-----------|----------------------------------------------|
-| **dump_format** | no       | custom   | custom    | --format=**dump_format**                     |
-|                 |          |          | directory |                                              |
-|                 |          |          | plain     |                                              |
-|                 |          |          | tar       |                                              |
-|-----------------|----------|----------|-----------|----------------------------------------------|
-| **dump_dir**    | no       |          |           | Path to backup dir                           |
-|                 |          |          |           | By default use user $HOME dir                |
-|-----------------|----------|----------|-----------|----------------------------------------------|
-| **jobs**        | no       |          |           | --jobs=**jobs**                              |
-|-----------------|----------|----------|-----------|----------------------------------------------|
-| **pg_bin_path** | no       |          |           | Irregular path to pg bin's                   |
-|-----------------|----------|----------|-----------|----------------------------------------------|
-| **raw_params**  | no       |          |           | Another pg_dump options in list on by string |
+| parameter | required | default | choices | comment |
+|-----------|----------|---------|---------|---------|
+| dbname | yes | | | --dbname=**dbane** |
+| username | no | postgres | | --username=**username** |
+| password | no | | | PGPASSWORD=**password** |
+| host | no | | | --host=**host** |
+| port | no | 5432 | | --port=**port** |
+| dump_format<br><br><br><br> | no<br><br><br><br> | custom<br><br><br><br> | custom<br>directory<br>plain<br>tar | --format=**dump_format**<br><br><br><br> |
+| dump_dir<br><br> | no<br><br> | | | Path to backup dir<br>By default use user $HOME dir |
+| jobs | no | | | --jobs=**jobs** |
+| pg_bin_path | no |          |           | Irregular path to pg bin's                   |
+| raw_params | no | | | Another pg_dump options in list on by string |
 
+### pg_restore module params
+
+| parameter | required | default | choices | comment |
+|-----------|----------|---------|---------|---------|
+| dbname | yes | | | --dbname=**dbane** |
+| username | no | postgres | | --username=**username** |
+| password | no | | | PGPASSWORD=**password** |
+| host | no | | | --host=**host** |
+| port | no | 5432 | | --port=**port** |
+| dump_format<br><br><br><br> | no<br><br><br><br> | custom<br><br><br><br> | custom<br>directory<br>plain<br>tar | --format=**dump_format**<br><br><br><br> |
+| dump_dir<br><br> | no<br><br> | | | Path to backup dir<br>By default use user $HOME dir |
+| jobs | no | | | --jobs=**jobs** |
+| pg_bin_path | no |          |           | Irregular path to pg bin's                   |
+| role | no | | | --role=**role** |
+| no_owner | no | | | --no-owner |
+| raw_params | no | | | Another pg_dump options in list on by string |
 
 ### Example
 
 Playbook pg_dump:
-```
+```yml
 - name: pg_dump task
   pg_dump:
     dbname: test_db_name
@@ -48,7 +51,7 @@ Playbook pg_dump:
 ```
 
 Playbook pg_restore:
-```
+```yml
 - name: pg_restore task
   pg_restore:
     dbname: test_db_name
@@ -64,3 +67,11 @@ Playbook pg_restore:
     no_owner: yes
     raw_params: ["--table=south_migrations"]
 ```
+
+### Usage
+
+Export ANSIBLE_LIBRARY environment variable. Like:
+```
+export ANSIBLE_LIBRARY=/home/q/Desktop/git/ansible-modules-custom:/home/q/.ansible/modules
+```
+*/home/q/Desktop/git/ansible-modules-custom* - path to this repo files
