@@ -24,9 +24,11 @@ def main():
           host = dict(default=""),
           port = dict(default=5432),
           dump_format = dict(default='custom', choises=['plain', 'custom', 'directory', 'tar']),
-          dump_dir = dict(),
+          dump_path = dict(required=True),
           jobs = dict(type='int'),
           pg_bin_path = dict(required=False, type='path'),
+          role = dict(),
+          no_owner = dict(default=False, type='bool'),
           raw_params = dict(type='list')
         )
     )
@@ -38,51 +40,45 @@ def main():
     port = module.params['port']
     jobs = module.params['jobs']
     dump_format = module.params['dump_format']
-    dump_dir = module.params['dump_dir']
+    dump_path = module.params['dump_path']
     pg_bin_path = module.params['pg_bin_path']
+    role = module.params['role']
+    no_owner = module.params['no_owner']
     raw_params = module.params['raw_params']
 
-    dump_name = "{}_{:%Y%m%d%H%M}".format(dbname, datetime.now())
-    if dump_dir:
-        if os.path.exists(dump_dir) and os.path.isdir(dump_dir):
-            if os.access(dump_dir, os.W_OK) and os.access(dump_dir, os.X_OK):
-                dump_path = os.path.join(dump_dir, dump_name)
-            else:
-                module.fail_json(msg="Permission denied: {}".format(dump_dir))
-        else:
-            module.fail_json(msg="{} not found or it is not directory".format(dump_dir))
-    else:
-        dump_path = os.path.join(os.path.expanduser('~'), dump_name)
+    if not os.path.exists(dump_path) or not os.access(dump_path, os.R_OK):
+        module.fail_json(msg="{} not found or permissions denied".format(dump_path))
 
     args = []
     if password:
         args.append("PGPASSWORD={}".format(password))
     if pg_bin_path:
-        pg_dump_path = os.path.join(pg_bin_path, 'pg_dump')
-        if os.path.exists(pg_dump_path) and is_executable(pg_dump_path):
-            args.append(pg_dump_path)
+        pg_restore_path = os.path.join(pg_bin_path, 'pg_restore')
+        if os.path.exists(pg_restore_path) and is_executable(pg_restore_path):
+            args.append(pg_restore_path)
         else:
-            module.fail_json(msg="pg_dump not found in specified path")
+            module.fail_json(msg="pg_restore not found in specified path")
     else:
-        args.append(module.get_bin_path("pg_dump", True))
+        args.append(module.get_bin_path("pg_restore", True))
     if host:
         args.append("--host={}".format(host))
     if port:
         args.append("--port={}".format(port))
     if jobs:
-        if dump_format == "directory":
-            args.append("--jobs={}".format(jobs))
-        else:
-            module.fail_json(msg="More than one job may used only with directory format")
+        args.append("--jobs={}".format(jobs))
     if dump_format:
         args.append("--format={}".format(dump_format))
-    if dump_path:
-        args.append("--file={}".format(dump_path))
     if dbname:
         args.append("--dbname={}".format(dbname))
+    if role:
+        args.append("--role={}".format(role))
+    if no_owner:
+        args.append("--no-owner".format(no_owner))
     if raw_params:
         for param in raw_params:
             args.append(param)
+    if dump_path:
+        args.append("{}".format(dump_path))
 
     module.run_command(args, check_rc=True)
     module.exit_json(changed=True, args=args, raw_params=raw_params)
